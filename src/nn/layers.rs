@@ -1,15 +1,29 @@
 use nalgebra::{DMatrix};
 
-// Defines a simple linear layer with no activation function.
+/**
+    * Multi-Layer Perceptron (MLP) Layers Module
+    *
+    * Layers are the basic building blocks of a neural network. Each layer
+    * consists of a set of neurons that process input data and pass the output
+    * to the next layer. The output of a layer is computed using a set of weights
+    * and biases that are learned during the training process. The weights and
+    * biases are updated using an optimization algorithm such as gradient descent.
+    *
+    * Currently, the following layers are implemented:
+    * 1. Linear Layer - Applies a linear transformation to the incoming data.
+    *                   The output is computed as Z = A * W^T + ι_N * b.
+    *
+**/
+
 
 pub struct Linear {
-    W : DMatrix<f64>, // Weights (C_out x C_in)
-    b : DMatrix<f64>, // Bias (C_out x 1)
-    A : DMatrix<f64>, // Layer input (pre-activation) (N x C_in)
-    dLdW : DMatrix<f64>, // Gradient of the loss with respect to W
-    dLdb : DMatrix<f64>, // Gradient of the loss with respect to b
-    N : usize, // Batch size (number of samples)
-    l_N : DMatrix<f64>, // Column vector of ones of size N (N x 1). Used to broadcast bias vector b.
+    pub W : DMatrix<f64>, // Weights (C_out x C_in)
+    pub b : DMatrix<f64>, // Bias (C_out x 1)
+    pub A : DMatrix<f64>, // Layer input (pre-activation) (N x C_in)
+    pub dLdW : DMatrix<f64>, // Gradient of the loss with respect to W
+    pub dLdb : DMatrix<f64>, // Gradient of the loss with respect to b
+    pub N : usize, // Batch size (number of samples)
+    pub l_N : DMatrix<f64>, // Column vector of ones of size N (N x 1). Used to broadcast bias vector b.
 }
 
 impl Linear {

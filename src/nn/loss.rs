@@ -1,31 +1,17 @@
 use nalgebra::{DMatrix};
 
-pub enum Criterion {
-    // Mean Squared Error Loss
-    MSE(MSE)
-    // TODO: Implement more loss functions
-}
+/**
+    * Loss Functions
+    *
+    * Loss functions are used to quantify the difference between the model's prediction
+    * and the actual output. The loss function is a measure of how well the model is
+    * performing. The goal of training a neural network is to minimize the loss function.
+    *
+    * Currently, the following loss functions are implemented:
+    * 1. Mean Squared Error (MSE) - L = 1/N * Σ_i (A_i - Y_i)^2
+    *
+**/
 
-impl Criterion {
-    // The Forward method takes in model prediction A and desired output
-    // Y of the same shape to calculate and return a loss value L.
-    // The loss value is a scalar quantity used to quantify the mismatch
-    // between the network output and the desired output.
-    pub fn forward(&mut self, y_pred : &DMatrix<f64>, y_true : &DMatrix<f64>) -> f64 {
-        match self {
-            Criterion::MSE(mse) => mse.forward(y_pred, y_true),
-        }
-    }
-
-    // The Backward method calculates and returns dLdA, how changes in
-    // model outputs A affect loss L. It is used to enable downstream computation,
-    // as seen in previous sections.
-    pub fn backward(&mut self) -> DMatrix<f64> {
-        match self {
-            Criterion::MSE(mse) => mse.backward(),
-        }
-    }
-}
 
 // Mean Squared Error Loss
 pub struct MSE {
@@ -89,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_mse_forward() {
-        let mut mse = Criterion::MSE(MSE::new());
+        let mut mse = MSE::new();
         let A = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
                                                 -2.0, -1.0,
                                                 0.0, 1.0,
@@ -106,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_mse_backward() {
-        let mut mse = Criterion::MSE(MSE::new());
+        let mut mse = MSE::new();
         let A = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
                                                 -2.0, -1.0,
                                                 0.0, 1.0,

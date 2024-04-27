@@ -1,13 +1,8 @@
 // Declare modules
 pub mod nn {
+    pub mod model;
     pub mod activation;
-    pub mod batchnorm;
-    pub mod linear;
+    pub mod layers;
     pub mod loss;
 }
-
-pub mod optim {
-    pub mod sgd;
-}
-
 
