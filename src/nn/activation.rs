@@ -1,4 +1,5 @@
 use nalgebra::{DMatrix};
+use std::f64::consts;
 
 /**
     * Activation Functions
@@ -66,6 +67,26 @@ impl ReLU {
     }
 }
 
+// Sigmoid Activation Function
+pub struct Sigmoid {
+    A : DMatrix<f64>
+}
+
+impl Sigmoid {
+    pub fn new() -> Self {
+        Sigmoid{
+            A : DMatrix::zeroes(0, 0);
+        }
+    }
+    pub fn forward(&mut self, Z : &DMatrix<f64>){
+        self.A = Z.map(|x| 1\(1 + consts::E.powi(x)));
+        return self.A.clone;
+    }
+
+
+
+
+}
 #[cfg(test)]
 mod tests {
     use super::*;
