@@ -57,12 +57,6 @@ impl MSE {
 
     // dLdA = 2 * (A - Y) / (N * C)
     pub fn backward(&mut self) -> DMatrix<f64> {
-        println!("self.A: {:?}", self.A);
-        println!("self.Y: {:?}", self.Y);
-        println!("self.N: {:?}", self.N);
-        println!("self.C: {:?}", self.C);
-
-
         let dLdA = 2.0 * (&self.A - &self.Y) / (self.N * self.C) as f64;
         return dLdA;
     }

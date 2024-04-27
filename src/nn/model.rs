@@ -40,6 +40,7 @@ impl NeuralNetwork {
         }
     }
 
+
     // During forward propagation, we apply a sequence of linear transformations
     // and activation functions to the input data x to obtain the output data y.
     // That is, y = fNN (x) = fL (fL-1 ( ... f2 (f1 (x)) ... )). The forward
@@ -65,7 +66,7 @@ impl NeuralNetwork {
         let mut dLdZ = dLdA;
         for i in (0..self.layers.len()).rev() {
             dLdZ = self.activations[i].backward(&dLdZ);
-            self.layers[i].backward(&dLdZ);
+            dLdZ = self.layers[i].backward(&dLdZ);
         }
     }
 }

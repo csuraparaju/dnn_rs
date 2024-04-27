@@ -1,0 +1,40 @@
+use dnn_rs::nn::model::NeuralNetwork;
+use dnn_rs::nn::activation::ReLU;
+use dnn_rs::nn::layers::Linear;
+use dnn_rs::nn::loss::MSE;
+
+use dnn_rs::optim::sgd::SGD;
+
+use nalgebra::{DMatrix};
+
+fn main() {
+    // Create a simple neural network model
+    let linear1 = Linear::new(2, 4);
+    let activation1 = ReLU::new();
+    let linear2 = Linear::new(4, 1);
+    let activation2 = ReLU::new();
+    let layers = vec![Box::new(linear1), Box::new(linear2)];
+    let activations = vec![Box::new(activation1), Box::new(activation2)];
+    let loss = Box::new(MSE::new());
+    let mut model = NeuralNetwork::new(layers, activations, loss);
+    let lr = 0.01;
+    let beta = 0.9;
+    let mut optim = SGD::new(model, lr, beta); // Given ownership of model to optim
+
+    // Create some training data
+    let x = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+                                            -2.0, -1.0,
+                                            0.0, 1.0,
+                                            2.0, 3.0]);
+    let y = DMatrix::from_row_slice(4, 1, &[0.0, 1.0, 1.0, 0.0]);
+
+    // Training loop
+    for _ in 0..1000 {
+        optim.update(&x, &y);
+    }
+
+    //Test the neural network model
+    let y_pred = optim.model.forward(&x);
+    println!("y_pred: {:?}", y_pred);
+}
+

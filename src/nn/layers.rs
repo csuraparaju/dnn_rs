@@ -31,8 +31,8 @@ impl Linear {
     // C_in input features and C_out output features.
     pub fn new(input_size : usize, output_size : usize) -> Self {
         Linear {
-            W : DMatrix::zeros(output_size, input_size),
-            b : DMatrix::zeros(output_size, 1),
+            W : DMatrix::new_random(output_size, input_size), // Init param randomly
+            b : DMatrix::new_random(output_size, 1),
             A : DMatrix::zeros(0, 0),
             dLdW : DMatrix::zeros(0, 0),
             dLdb : DMatrix::zeros(0, 0),
