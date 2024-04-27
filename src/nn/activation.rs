@@ -4,10 +4,7 @@ use nalgebra::{DMatrix};
 pub enum Activation {
     Identity(Identity),
     ReLU(ReLU),
-    // Sigmoid(Sigmoid),
-    // Tanh(Tanh),
-    // GELU(GELU),
-    // Softmax(Softmax)
+    // TODO: Implement more activation functions
 }
 
 impl Activation {
@@ -17,12 +14,8 @@ impl Activation {
     // f shape N × C.
     pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64> {
         match self {
-            Activation::Identity(ref mut identity) => identity.forward(Z),
+            Activation::Identity(identity) => identity.forward(Z),
             Activation::ReLU(relu) => relu.forward(Z),
-            // Activation::Sigmoid(sigmoid) => sigmoid.forward(Z),
-            // Activation::Tanh(tanh) => tanh.forward(Z),
-            // Activation::GELU(gelu) => gelu.forward(Z),
-            // Activation::Softmax(softmax) => softmax.forward(Z)
         }
     }
 
@@ -37,10 +30,6 @@ impl Activation {
         match self {
             Activation::Identity(identity) => identity.backward(dLdA),
             Activation::ReLU(relu) => relu.backward(dLdA),
-            // Activation::Sigmoid(sigmoid) => sigmoid.backward(dA),
-            // Activation::Tanh(tanh) => tanh.backward(dA),
-            // Activation::GELU(gelu) => gelu.backward(dA),
-            // Activation::Softmax(softmax) => softmax.backward(dA)
         }
     }
 }
@@ -104,7 +93,8 @@ mod tests {
     #[test]
     fn test_identity_forward() {
         let mut identity = Identity::new();
-        let Z = DMatrix::from_row_slice(2, 2, &[1.0, 2.0, 3.0, 4.0]);
+        let Z = DMatrix::from_row_slice(2, 2, &[1.0, 2.0,
+                                                3.0, 4.0]);
         let A = identity.forward(&Z);
         assert_abs_diff_eq!(A, Z, epsilon = 1e-12);
     }
@@ -112,7 +102,8 @@ mod tests {
     #[test]
     fn test_identity_backward() {
         let identity = Identity::new();
-        let dLdA = DMatrix::from_row_slice(2, 2, &[1.0, 2.0, 3.0, 4.0]);
+        let dLdA = DMatrix::from_row_slice(2, 2, &[1.0, 2.0,
+                                                    3.0, 4.0]);
         let dLdZ = identity.backward(&dLdA);
         assert_abs_diff_eq!(dLdZ, dLdA, epsilon = 1e-12);
     }
@@ -120,20 +111,25 @@ mod tests {
     #[test]
     fn test_relu_forward() {
         let mut relu = ReLU::new();
-        let Z = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, -1.6123, -2.5186, -1.9395, 1.4077]);
+        let Z = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, -1.6123,
+                                                -2.5186, -1.9395, 1.4077]);
         let A = relu.forward(&Z);
-        let expected = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, 0.0, 0.0, 0.0, 1.4077]);
+        let expected = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022,
+                                                       0.0, 0.0, 0.0, 1.4077]);
         assert_abs_diff_eq!(A, expected, epsilon = 1e-12);
     }
 
     #[test]
     fn test_relu_backward() {
         let mut relu = ReLU::new();
-        let Z = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, -1.6123, -2.5186, -1.9395, 1.4077]);
+        let Z = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, -1.6123,
+                                                -2.5186, -1.9395, 1.4077]);
         let A = relu.forward(&Z);
-        let dLdA = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]); // Mock dLdA
+        let dLdA = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 3.0,
+                                                   4.0, 5.0, 6.0]); // Mock dLdA
         let dLdZ = relu.backward(&dLdA);
-        let expected = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 0.0, 0.0, 0.0, 6.0]);
+        let expected = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 0.0,
+                                                       0.0, 0.0, 6.0]);
     }
 
 }
