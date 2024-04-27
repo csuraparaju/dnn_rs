@@ -25,23 +25,25 @@ use crate::nn::activation::ReLU;
 
 pub struct NeuralNetwork {
     pub layers: Vec<Box<Linear>>,
+    pub activations: Vec<Box<ReLU>>, // Invariant: activations.len() == layers.len()
     pub loss: Box<MSE>,
-    pub activations: Vec<Box<ReLU>>
 }
 
 impl NeuralNetwork {
-    // Constructor for the NeuralNetwork struct. Creates a new neural network
+    // Constructor for the NeuralNetwork struct. Creates a new NeuralNetwork
     // model with the specified layers and loss function.
-    pub fn new(layers: Vec<Box<Linear>>, loss: Box<MSE>, activations: Vec<Box<ReLU>>) -> Self {
+    pub fn new(layers: Vec<Box<Linear>>, activations: Vec<Box<ReLU>>, loss: Box<MSE>) -> Self {
         NeuralNetwork {
             layers: layers,
+            activations: activations,
             loss: loss,
-            activations: activations
         }
     }
 
-    // During forward propagation, we pass the input data x through each layer
-    // in the neural network to compute the output y. That is, y = fNN (x) = fL (fL-1 ( ... f2 (f1 (x)) ... ))
+    // During forward propagation, we apply a sequence of linear transformations
+    // and activation functions to the input data x to obtain the output data y.
+    // That is, y = fNN (x) = fL (fL-1 ( ... f2 (f1 (x)) ... )). The forward
+    // method computes the output of the neural network given the input data x.
     pub fn forward(&mut self, x: &DMatrix<f64>) -> DMatrix<f64> {
         let mut A = x.clone();
         for i in 0..self.layers.len() {
@@ -52,15 +54,17 @@ impl NeuralNetwork {
     }
 
     // During backward propagation, we compute the gradients of the loss with
-    // respect to the parameters of the neural network. Given the loss function
-    // L, we can compute the gradients of the loss with respect to the output
-    // of the neural network A, and then backpropagate these gradients through
-    // each layer to compute the gradients of the loss with respect to the
-    // parameters of the neural network.
+    // respect to the parameters of the neural network. Given the gradients
+    // of the loss with respect to the output of the neural network, we can
+    // compute the gradients of the loss with respect to the parameters of
+    // each layer in the neural network. The backward method computes the
+    // gradients of the loss with respect to the parameters of the neural
+    // network using the chain rule of calculus.
     pub fn backward(&mut self) {
         let dLdA = self.loss.backward();
+        let mut dLdZ = dLdA;
         for i in (0..self.layers.len()).rev() {
-            let dLdZ = self.activations[i].backward(&dLdA);
+            dLdZ = self.activations[i].backward(&dLdZ);
             self.layers[i].backward(&dLdZ);
         }
     }
