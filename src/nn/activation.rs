@@ -53,7 +53,7 @@ impl Identity {
 
     pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64> {
         let dLdZ = dLdA; // Derivative of Identity is 1, so dLdZ = dLdA * 1 = dLdA
-        return dLdA.clone();
+        return dLdZ.clone();
     }
 }
 
@@ -124,12 +124,13 @@ mod tests {
         let mut relu = ReLU::new();
         let Z = DMatrix::from_row_slice(2, 3, &[0.0378, 0.3022, -1.6123,
                                                 -2.5186, -1.9395, 1.4077]);
-        let A = relu.forward(&Z);
+        let _ = relu.forward(&Z);
         let dLdA = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 3.0,
                                                    4.0, 5.0, 6.0]); // Mock dLdA
         let dLdZ = relu.backward(&dLdA);
         let expected = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 0.0,
                                                        0.0, 0.0, 6.0]);
+        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
     }
 
 }

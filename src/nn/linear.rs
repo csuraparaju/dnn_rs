@@ -46,7 +46,7 @@ impl Linear {
     // ∂L/∂A = ∂L/∂Z * W
     // ∂L/∂W = (∂L/∂Z)^T * A
     // ∂L/∂b = (∂L/∂Z)^T * ι_N
-    pub fn backward(&mut self, dLdZ : &DMatrix<f64>, learning_rate : f64) -> DMatrix<f64> {
+    pub fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64> {
         let dLdA = dLdZ * &self.W;
         self.dLdW = dLdZ.transpose() * &self.A;
         self.dLdb = dLdZ.transpose() * &self.l_N;
@@ -72,8 +72,7 @@ mod tests {
     use approx::assert_abs_diff_eq;
 
     #[test]
-
-    fn test_linear() {
+    fn test_linear_forward() {
         let mut linear = Linear::new(2, 3);
         linear.W = DMatrix::from_row_slice(3, 2, &
                                                  [-2.0, -1.0, 0.0,
@@ -90,11 +89,27 @@ mod tests {
                                                          -2.0, 1.0, 4.0,
                                                          -8.0, 3.0, 14.0]);
         assert_abs_diff_eq!(Z, expected_Z, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn test_linear_backward() {
+        let mut linear = Linear::new(2, 3);
+        linear.W = DMatrix::from_row_slice(3, 2, &
+                                                 [-2.0, -1.0, 0.0,
+                                                 1.0, 2.0, 3.0]);
+        linear.b = DMatrix::from_row_slice(3, 1, &[-1.0, 0.0, 1.0]);
+
+        let A = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+                                                -2.0, -1.0,
+                                                0.0, 1.0,
+                                                2.0, 3.0]);
+        let _ = linear.forward(&A);
 
         let dLdZ = DMatrix::from_row_slice(4, 3, &[-4.0, -3.0, -2.0, -1.0,
                                                     0.0, 1.0, 2.0, 3.0,
                                                     4.0, 5.0, 6.0, 7.0]);
-        let dLdA = linear.backward(&dLdZ, 0.1);
+
+        let dLdA = linear.backward(&dLdZ);
         let expected_dLdA = DMatrix::from_row_slice(4, 2, &[4.0, -5.0,
                                                             4.0, 4.0,
                                                             4.0, 13.0,
@@ -110,4 +125,5 @@ mod tests {
         assert_abs_diff_eq!(linear.dLdW, expected_dLdW, epsilon = 1e-12);
         assert_abs_diff_eq!(linear.dLdb, expected_dLdb, epsilon = 1e-12);
     }
+
 }
