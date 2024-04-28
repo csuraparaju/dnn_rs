@@ -1,4 +1,5 @@
 use nalgebra::{DMatrix};
+use std::f64::consts;
 
 /**
     * Activation Functions
@@ -11,6 +12,7 @@ use nalgebra::{DMatrix};
     * Currently, the following activation functions are implemented:
     * 1. Identity - f(x) = x
     * 2. ReLU - f(x) = max(0, x)
+    * 3. Sigmoid f(x) = 1/(1 + e^-x)
     *
 **/
 
@@ -66,6 +68,28 @@ impl ReLU {
     }
 }
 
+// Sigmoid Activation Function
+pub struct Sigmoid {
+    A : DMatrix<f64>
+}
+
+impl Sigmoid {
+    pub fn new() -> Self {
+        Sigmoid{
+            A : DMatrix::zeros(0, 0)
+        }
+    }
+    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
+        self.A = Z.map(|x| 1.0/(1.0 + consts::E.powf(x)));
+        return self.A.clone();
+    }
+    pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
+        let dAdZ = self.A.map(|x| x * (1.0 - x));
+        return dLdA.component_mul(&dAdZ);
+    }
+
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,6 +136,39 @@ mod tests {
         let expected = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 0.0,
                                                        0.0, 0.0, 6.0]);
         assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
+    }
+
+    fn test_sigmoid_forward(){
+        let mut sigmoid = Sigmoid::new();
+        let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+                                                -2.0, -1.0,
+                                                0.0, 1.0,
+                                                2.0, 3.0]);
+        let A = sigmoid.forward(&Z);
+        let expected = DMatrix::from_row_slice(4, 2, &[0.018, 0.0474,
+                                                       0.1192, 0.2689,
+                                                       0.5, 0.7311,
+                                                       0.8808, 0.9526]);
+        assert_abs_diff_eq!(A, expected, epsilon = 1e-12);
+    }
+    fn test_sigmoid_backward(){
+        let mut sigmoid = Sigmoid::new();
+        let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+                                                -2.0, -1.0,
+                                                0.0, 1.0,
+                                                2.0, 3.0]);
+        let _ = sigmoid.forward(&Z);
+        let dLdA = DMatrix::from_row_slice(4, 2, &[1.0, 1.0,
+                                                   1.0, 1.0,
+                                                   1.0, 1.0,
+                                                   1.0, 1.0,]);
+        let dLdZ = sigmoid.backward(&dLdA);
+        let expected = DMatrix::from_row_slice(4, 2, &[0.0177, 0.0452,
+                                                       0.105, 0.1966,
+                                                       0.25, 0.1966,
+                                                       0.105, 0.0452]);
+        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
+        
     }
 
 }

@@ -5,6 +5,7 @@ A deep learning library written in Rust, structured similary to pytorch. This li
 - Activation Functions:
     - [x] Identity
     - [x] ReLU
+    - [x] Sigmoid
 - Layers:
     - [x] Linear
 - Loss Functions:
