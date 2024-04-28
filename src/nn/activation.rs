@@ -116,6 +116,11 @@ impl Tanh {
                             (consts::E.powf(z) + consts::E.powf(-z)));
         return self.A.clone();
     }
+    // d/dx tanh(x) -> 1 - tanh(x)^2
+    pub fn backward(&mut self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
+        let dAdZ = 1 - self.A.component_mul(&self.A);
+        dLdA.component_mul(&dAdZ);
+    }
 }
 
 #[cfg(test)]
