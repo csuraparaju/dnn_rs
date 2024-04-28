@@ -61,6 +61,7 @@ impl Linear {
     // ∂L/∂W = (∂L/∂Z)^T * A
     // ∂L/∂b = (∂L/∂Z)^T * ι_N
     pub fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64> {
+        // println!("Passed into backwards pass: {}", dLdZ);
         let dLdA = dLdZ * &self.W;
         self.dLdW = dLdZ.transpose() * &self.A;
         self.dLdb = dLdZ.transpose() * &self.l_N;
