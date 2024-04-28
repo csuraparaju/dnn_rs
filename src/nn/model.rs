@@ -49,6 +49,9 @@ impl NeuralNetwork {
         let mut A = x.clone();
         for i in 0..self.layers.len() {
             A = self.layers[i].forward(&A);
+            if (i > self.activations.len() - 1){
+                break;
+            }
             A = self.activations[i].forward(&A);
         }
         return A;
@@ -65,7 +68,9 @@ impl NeuralNetwork {
         let dLdA = self.loss.backward();
         let mut dLdZ = dLdA;
         for i in (0..self.layers.len()).rev() {
-            dLdZ = self.activations[i].backward(&dLdZ);
+            if (i <= self.activations.len() - 1){
+                dLdZ = self.activations[i].backward(&dLdZ);
+            }
             dLdZ = self.layers[i].backward(&dLdZ);
         }
     }
