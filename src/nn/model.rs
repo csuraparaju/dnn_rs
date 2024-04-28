@@ -49,7 +49,7 @@ impl NeuralNetwork {
         let mut A = x.clone();
         for i in 0..self.layers.len() {
             A = self.layers[i].forward(&A);
-            if (i > self.activations.len() - 1){
+            if i > self.activations.len() - 1 {
                 break;
             }
             A = self.activations[i].forward(&A);
@@ -65,13 +65,13 @@ impl NeuralNetwork {
     // gradients of the loss with respect to the parameters of the neural
     // network using the chain rule of calculus.
     pub fn backward(&mut self) {
-        let dLdA = self.loss.backward();
-        let mut dLdZ = dLdA;
+        let mut dLdA = self.loss.backward();
+        let mut dLdZ = DMatrix::zeros(0,0);
         for i in (0..self.layers.len()).rev() {
-            if (i <= self.activations.len() - 1){
-                dLdZ = self.activations[i].backward(&dLdZ);
+            if i <= self.activations.len() - 1 {
+                dLdZ = self.activations[i].backward(&dLdA);
             }
-            dLdZ = self.layers[i].backward(&dLdZ);
+            dLdA = self.layers[i].backward(&dLdZ);
         }
     }
 }

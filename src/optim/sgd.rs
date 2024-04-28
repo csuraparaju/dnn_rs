@@ -56,10 +56,15 @@ impl SGD {
         let loss = self.model.loss.forward(&Z, &y);
 
         // Backward pass
-        let dLdZ = self.model.loss.backward();
-        let _ = self.model.backward();
+        //let dLdZ = self.model.loss.backward();
+        let dLdA = self.model.backward();
 
         for i in 0..self.model.layers.len() {
+            // let Z = self.model.forward(&x);
+            // let loss = self.model.loss.forward(&Z, &y);    
+            
+            // let dLdZ = self.model.loss.backward();
+            // let _ = self.model.backward();
             if self.beta == 0.0 {
                 // Update the weights and biases using the negative gradient
                 // of the loss with respect to the parameters
@@ -71,11 +76,6 @@ impl SGD {
                 // Update the weights and biases using momentum
                 let dLdW = self.model.layers[i].dLdW.clone();
                 let dLdb = self.model.layers[i].dLdb.clone();
-                // println!("dLdW: {:?}", dLdW);
-                // println!("dLdb: {:?}", dLdb);
-                // println!("v_W: {:?}", self.v_W[i]);
-                // println!("v_b: {:?}", self.v_b[i]);
-                // println!("model.W: {:?}", self.model.layers[i].W);
                 self.v_W[i] = self.beta * &self.v_W[i] + (1.0 - self.beta) * dLdW;
                 self.v_b[i] = self.beta * &self.v_b[i] + (1.0 - self.beta) * dLdb;
                 self.model.layers[i].W -= self.lr * &self.v_W[i];

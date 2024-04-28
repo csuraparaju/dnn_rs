@@ -64,7 +64,7 @@ impl ReLU {
 
         // Derivative of ReLU is 1 if x > 0, 0 otherwise
         let dAdZ = self.A.map(|x| if x > 0.0 { 1.0 } else { 0.0 });
-        dLdA.component_mul(&dAdZ) // dLdZ = dLdA * dA/dZ
+        return dLdA.component_mul(&dAdZ); // dLdZ = dLdA * dA/dZ
     }
 }
 
