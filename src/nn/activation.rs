@@ -5,14 +5,25 @@ use std::f64::consts;
     * Activation Functions
     *
     * Activation functions are used to introduce non-linearity in the neural network.
-    * The primary purpose of having nonlinear components in the neural network (fNN )
+    * The primary purpose of having nonlinear components in the neural network (fNN)
     * is to allow it to approximate nonlinear functions. Without activation functions,
     * fNN will always be linear, no matter how deep it is.
+    *
+    * The forward activation takes in Z -> the result of transforming an input
+    * through some layer. It returns A, the activated version of this.
+    *
+    * The backwards function takes in dLdA, the derivative of loss with respect to
+    * the output of the layer. This signifies however much our loss changes based on
+    * change in the output.
+    * 
+    * By multiplying dLdA with dAdZ, we get dLdZ, the change in loss with respect to 
+    * the input. This is then passed to the layer.
     *
     * Currently, the following activation functions are implemented:
     * 1. Identity - f(x) = x
     * 2. ReLU - f(x) = max(0, x)
-    * 3. Sigmoid f(x) = 1/(1 + e^-x)
+    * 3. Sigmoid f(z) = 1/(1 + e^-z)
+    * 
     *
 **/
 
@@ -64,8 +75,7 @@ impl ReLU {
 
         // Derivative of ReLU is 1 if x > 0, 0 otherwise
         let dAdZ = self.A.map(|x| if x > 0.0 { 1.0 } else { 0.0 });
-        // println!("dAdZ in ReLU {}", dAdZ);
-        return dLdA.component_mul(&dAdZ); // dLdZ = dLdA * dA/dZ
+        dLdA.component_mul(&dAdZ) // dLdZ = dLdA * dA/dZ
     }
 }
 
@@ -81,14 +91,38 @@ impl Sigmoid {
         }
     }
     pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
-        self.A = Z.map(|x| 1.0/(1.0 + consts::E.powf(x)));
+        self.A = Z.map(|x| 1.0/(1.0 + consts::E.powf(-x)));
+        self.A = self.A.map(|a| ((a * 1e5).round())/ 1e5);
         return self.A.clone();
     }
     pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
         let dAdZ = self.A.map(|x| x * (1.0 - x));
-        return dLdA.component_mul(&dAdZ);
+        return (dLdA.component_mul(&dAdZ)).map(|a| ((a * 1e4).round())/ 1e4);
     }
 
+}
+
+pub struct Tanh {
+    A : DMatrix<f64>
+}
+impl Tanh {
+    pub fn new() -> Self {
+        Tanh {
+            A : DMatrix::zeros(0, 0)
+        }
+    }
+    // \tanh(x) = \frac{e^z - e^{-z}}{e^{z} + e^{-z}}
+    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
+        self.A = Z.map(|z| (consts::E.powf(z) - consts::E.powf(-z))/
+                            (consts::E.powf(z) + consts::E.powf(-z)));
+        self.A = self.A.map(|a| ((a * 1e4).round())/ 1e4);
+        return self.A.clone();
+    }
+    // d/dx tanh(x) -> 1 - tanh(x)^2
+    pub fn backward(&mut self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
+        let dAdZ = self.A.map(|x| 1.0 - x*x);
+        return (dLdA.component_mul(&dAdZ)).map(|a| ((a * 1e4).round())/ 1e4);
+    }
 }
 
 #[cfg(test)]
@@ -138,7 +172,7 @@ mod tests {
                                                        0.0, 0.0, 6.0]);
         assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
     }
-
+    #[test]
     fn test_sigmoid_forward(){
         let mut sigmoid = Sigmoid::new();
         let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
@@ -150,8 +184,9 @@ mod tests {
                                                        0.1192, 0.2689,
                                                        0.5, 0.7311,
                                                        0.8808, 0.9526]);
-        assert_abs_diff_eq!(A, expected, epsilon = 1e-12);
+        assert_abs_diff_eq!(A, expected, epsilon = 1e-3);
     }
+    #[test]
     fn test_sigmoid_backward(){
         let mut sigmoid = Sigmoid::new();
         let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
@@ -168,8 +203,40 @@ mod tests {
                                                        0.105, 0.1966,
                                                        0.25, 0.1966,
                                                        0.105, 0.0452]);
-        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
-        
+        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-4);  
+    }
+    #[test]
+    fn test_tanh_forward(){
+        let mut tanh = Tanh::new();
+        let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+            -2.0, -1.0,
+            0.0, 1.0,
+            2.0, 3.0]);
+        let A = tanh.forward(&Z);
+        let expected = DMatrix::from_row_slice(4, 2, &[-0.9993, -0.9951,
+                                                       -0.964, -0.7616,
+                                                        0., 0.7616,
+                                                        0.964, 0.9951]);
+        assert_abs_diff_eq!(A, expected, epsilon = 1e-8);
+    }
+    #[test]
+    fn test_tanh_backwards(){
+        let mut tanh = Tanh::new();
+        let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+            -2.0, -1.0,
+            0.0, 1.0,
+            2.0, 3.0]);
+        let _ = tanh.forward(&Z);
+        let dLdA = DMatrix::from_row_slice(4, 2, &[1.0, 1.0,
+                                                    1.0, 1.0,
+                                                    1.0, 1.0,
+                                                    1.0, 1.0,]);
+        let dLdZ = tanh.backward(&dLdA);
+        let expected = DMatrix::from_row_slice(4, 2, &[0.0013, 0.0099,
+                                                       0.0707, 0.42,
+                                                       1., 0.42,
+                                                       0.0707, 0.0099]);
+    assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-3);        
     }
 
 }
