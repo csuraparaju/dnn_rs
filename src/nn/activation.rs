@@ -75,22 +75,20 @@ pub struct Sigmoid {
 impl Sigmoid {
     pub fn new() -> Self {
         Sigmoid{
-            A : DMatrix::zeroes(0, 0);
+            A : DMatrix::zeros(0, 0)
         }
     }
-    pub fn forward(&mut self, Z : &DMatrix<f64>){
-        self.A = Z.map(|x| 1\(1 + consts::E.powi(x)));
-        return self.A.clone;
+    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
+        self.A = Z.map(|x| 1.0/(1.0 + consts::E.powf(x)));
+        return self.A.clone();
     }
-    pub fn backward(&self, dLdA : &DMatrix<f64>){
-        let dLdA = self.A.map(|x| x * (1 - x))
+    pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
+        let dLdA = self.A.map(|x| x * (1.0 - x));
         return dLdA;
     }
 
-
-
-
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
