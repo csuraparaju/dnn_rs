@@ -28,12 +28,6 @@ use std::f64::consts;
 **/
 
 
-// Define a trait for Activation Functions
-pub trait ActivationFunction {
-    fn forward(&mut self, Z: &DMatrix<f64>) -> DMatrix<f64>;
-    fn backward(&self, dLdA: &DMatrix<f64>) -> DMatrix<f64>;
-}
-
 // Identity Activation Function
 pub struct Identity {
     A : DMatrix<f64>
@@ -46,16 +40,12 @@ impl Identity {
         }
     }
 
-}
-
-impl ActivationFunction for Identity{
-
-   fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64> {
+    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64> {
         self.A = Z.clone(); // Identity(Z) = Z
         return self.A.clone();
     }
 
-    fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64> {
+    pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64> {
         let dLdZ = dLdA; // Derivative of Identity is 1, so dLdZ = dLdA * 1 = dLdA
         return dLdZ.clone();
     }
@@ -85,8 +75,7 @@ impl ReLU {
 
         // Derivative of ReLU is 1 if x > 0, 0 otherwise
         let dAdZ = self.A.map(|x| if x > 0.0 { 1.0 } else { 0.0 });
-        // println!("dAdZ in ReLU {}", dAdZ);
-        return dLdA.component_mul(&dAdZ); // dLdZ = dLdA * dA/dZ
+        dLdA.component_mul(&dAdZ) // dLdZ = dLdA * dA/dZ
     }
 }
 
@@ -110,6 +99,23 @@ impl Sigmoid {
         return dLdA.component_mul(&dAdZ);
     }
 
+}
+
+pub struct Tanh {
+    A : DMatrix<f64>
+}
+impl Tanh {
+    pub fn new() -> Self {
+        Tanh {
+            A : DMatrix::zeros(0, 0)
+        }
+    }
+    
+    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
+        self.A = Z.map(|x| (consts::E.powf(z) - consts::E.powf(-z))/
+                            (consts::E.powf(z) + consts::E.powf(-z)));
+        return self.A.clone();
+    }
 }
 
 #[cfg(test)]
