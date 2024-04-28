@@ -72,6 +72,7 @@ impl NeuralNetwork {
                 dLdZ = self.activations[i].backward(&dLdA);
             }
             dLdA = self.layers[i].backward(&dLdZ);
+            // println!("dLdA at the {}th layer, {}", i, dLdA)
         }
     }
 }

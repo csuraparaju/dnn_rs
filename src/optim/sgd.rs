@@ -55,9 +55,11 @@ impl SGD {
         let Z = self.model.forward(&x);
         let loss = self.model.loss.forward(&Z, &y);
 
+
         // Backward pass
         //let dLdZ = self.model.loss.backward();
         let dLdA = self.model.backward();
+        // println!("weights {}\n\n", self.model.layers[0].dLdW.clone());
 
         for i in 0..self.model.layers.len() {
             // let Z = self.model.forward(&x);
@@ -70,8 +72,10 @@ impl SGD {
                 // of the loss with respect to the parameters
                 let dLdW = self.model.layers[i].dLdW.clone();
                 let dLdb = self.model.layers[i].dLdb.clone();
-                self.model.layers[i].W -= self.lr * dLdW;
-                self.model.layers[i].b -= self.lr * dLdb;
+                self.model.layers[i].W -= self.lr * &dLdW;
+                self.model.layers[i].b -= self.lr * &dLdb;
+                // println!("weights {}\n\n", dLdW.clone());
+                // self.model.layers[i].print_layer_params();
             } else {
                 // Update the weights and biases using momentum
                 let dLdW = self.model.layers[i].dLdW.clone();

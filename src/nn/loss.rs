@@ -52,12 +52,14 @@ impl MSE {
         //  the row sums across columns to give the final sum as a single number.
         let sum_square_error = &self.l_N.transpose() * &square_error * &self.l_C;
         let loss = sum_square_error[(0, 0)] / (self.N * self.C) as f64;
+        // println!("loss {}", loss);
         return loss;
     }
 
     // dLdA = 2 * (A - Y) / (N * C)
     pub fn backward(&mut self) -> DMatrix<f64> {
         let dLdA = 2.0 * (&self.A - &self.Y) / (self.N * self.C) as f64;
+        // println!("dLdA for final output: {}", &dLdA);
         return dLdA;
     }
 }

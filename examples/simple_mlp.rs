@@ -32,12 +32,14 @@ fn main() {
                                             0.0, 1.0]);
 
     // Training loop
-    for _ in 0..1000 {
+    for _ in 0..10000 {
         optim.update(&x, &y);
     }
 
     //Test the neural network model
-    let y_pred = optim.model.forward(&x);
-    println!("y_pred: {:?}", y_pred);
+    let mut y_pred = optim.model.forward(&x);
+    let y_pred_round = y_pred.map(|x| x.round());
+
+    println!("y_pred: {:?}", y_pred_round);
 }
 
