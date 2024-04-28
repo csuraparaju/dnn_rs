@@ -82,6 +82,10 @@ impl Sigmoid {
         self.A = Z.map(|x| 1\(1 + consts::E.powi(x)));
         return self.A.clone;
     }
+    pub fn backward(&self, dLdA : &DMatrix<f64>){
+        let dLdA = self.A.map(|x| x * (1 - x))
+        return dLdA;
+    }
 
 
 
