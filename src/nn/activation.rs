@@ -5,17 +5,34 @@ use std::f64::consts;
     * Activation Functions
     *
     * Activation functions are used to introduce non-linearity in the neural network.
-    * The primary purpose of having nonlinear components in the neural network (fNN )
+    * The primary purpose of having nonlinear components in the neural network (fNN)
     * is to allow it to approximate nonlinear functions. Without activation functions,
     * fNN will always be linear, no matter how deep it is.
+    *
+    * The forward activation takes in Z -> the result of transforming an input
+    * through some layer. It returns A, the activated version of this.
+    *
+    * The backwards function takes in dLdA, the derivative of loss with respect to
+    * the output of the layer. This signifies however much our loss changes based on
+    * change in the output.
+    * 
+    * By multiplying dLdA with dAdZ, we get dLdZ, the change in loss with respect to 
+    * the input. This is then passed to the layer.
     *
     * Currently, the following activation functions are implemented:
     * 1. Identity - f(x) = x
     * 2. ReLU - f(x) = max(0, x)
-    * 3. Sigmoid f(x) = 1/(1 + e^-x)
+    * 3. Sigmoid f(z) = 1/(1 + e^-z)
+    * 
     *
 **/
 
+
+// Define a trait for Activation Functions
+pub trait ActivationFunction {
+    fn forward(&mut self, Z: &DMatrix<f64>) -> DMatrix<f64>;
+    fn backward(&self, dLdA: &DMatrix<f64>) -> DMatrix<f64>;
+}
 
 // Identity Activation Function
 pub struct Identity {
