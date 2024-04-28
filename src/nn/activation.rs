@@ -110,16 +110,16 @@ impl Tanh {
             A : DMatrix::zeros(0, 0)
         }
     }
-    
+    // \tanh(x) = \frac{e^z - e^{-z}}{e^{z} + e^{-z}}
     pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64>{
-        self.A = Z.map(|x| (consts::E.powf(z) - consts::E.powf(-z))/
+        self.A = Z.map(|z| (consts::E.powf(z) - consts::E.powf(-z))/
                             (consts::E.powf(z) + consts::E.powf(-z)));
         return self.A.clone();
     }
     // d/dx tanh(x) -> 1 - tanh(x)^2
     pub fn backward(&mut self, dLdA : &DMatrix<f64>) -> DMatrix<f64>{
-        let dAdZ = 1 - self.A.component_mul(&self.A);
-        dLdA.component_mul(&dAdZ);
+        let dAdZ = self.A.map(|x| 1.0 - x*x);
+        return dLdA.component_mul(&dAdZ);
     }
 }
 
@@ -200,8 +200,22 @@ mod tests {
                                                        0.105, 0.1966,
                                                        0.25, 0.1966,
                                                        0.105, 0.0452]);
-        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);
-        
+        assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-12);  
+    }
+
+    fn test_tanh_forward(){
+        let mut tanh = Tanh::new();
+        let Z = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
+            -2.0, -1.0,
+            0.0, 1.0,
+            2.0, 3.0]);
+        let A = tanh.forward(&Z);
+        let expected = DMatrix::from_row_slice(4, 2, &[-0.9993, -0.9951,
+                                                       -0.964, -0.7616,
+                                                        0., 0.7616,
+                                                        0.964, 0.9951]);
+        assert_abs_diff_eq!(A, expected, epsilon = 1e-12);
+
     }
 
 }
