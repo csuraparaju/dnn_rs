@@ -46,12 +46,16 @@ impl Identity {
         }
     }
 
-    pub fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64> {
+}
+
+impl ActivationFunction for Identity{
+
+   fn forward(&mut self, Z : &DMatrix<f64>) -> DMatrix<f64> {
         self.A = Z.clone(); // Identity(Z) = Z
         return self.A.clone();
     }
 
-    pub fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64> {
+    fn backward(&self, dLdA : &DMatrix<f64>) -> DMatrix<f64> {
         let dLdZ = dLdA; // Derivative of Identity is 1, so dLdZ = dLdA * 1 = dLdA
         return dLdZ.clone();
     }
