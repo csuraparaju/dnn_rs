@@ -1,11 +1,12 @@
 ## dnn_rs: A Deep Learning Library written in Rust
 A deep learning library written in Rust, structured similary to pytorch. This library is still in development and is not yet ready for use. The goal is to provide a high performance deep learning library that is easy to use and understand.
 
-## Features (As of 4/27/2024)
+## Features (As of 4/28/2024)
 - Activation Functions:
     - [x] Identity
     - [x] ReLU
     - [x] Sigmoid
+    - [x] Tanh 
 - Layers:
     - [x] Linear
 - Loss Functions:
