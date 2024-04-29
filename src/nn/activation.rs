@@ -75,7 +75,7 @@ impl ReLU {
 
         // Derivative of ReLU is 1 if x > 0, 0 otherwise
         let dAdZ = self.A.map(|x| if x > 0.0 { 1.0 } else { 0.0 });
-        dLdA.component_mul(&dAdZ) // dLdZ = dLdA * dA/dZ
+        return dLdA.component_mul(&dAdZ); // dLdZ = dLdA * dA/dZ
     }
 }
 
@@ -203,6 +203,7 @@ mod tests {
                                                        0.105, 0.1966,
                                                        0.25, 0.1966,
                                                        0.105, 0.0452]);
+      
         assert_abs_diff_eq!(dLdZ, expected, epsilon = 1e-4);  
     }
     #[test]

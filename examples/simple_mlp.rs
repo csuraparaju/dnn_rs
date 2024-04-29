@@ -13,10 +13,12 @@ fn main() {
     let activation1 = ReLU::new();
     let linear2 = Linear::new(3, 2);
     let activation2 = ReLU::new();
+
     let layers = vec![Box::new(linear1), Box::new(linear2)];
     let activations = vec![Box::new(activation1), Box::new(activation2)];
     let loss = Box::new(MSE::new());
-    let mut model = NeuralNetwork::new(layers, activations, loss);
+
+    let model = NeuralNetwork::new(layers, activations, loss);
     let lr = 0.01;
     let beta = 0.0;
     let mut optim = SGD::new(model, lr, beta); // Given ownership of model to optim
@@ -32,14 +34,19 @@ fn main() {
                                             0.0, 1.0]);
 
     // Training loop
-    for _ in 0..10000 {
+    for _ in 0..5000 {
         optim.update(&x, &y);
     }
 
-    //Test the neural network model
-    let mut y_pred = optim.model.forward(&x);
-    let y_pred_round = y_pred.map(|x| x.round());
+    //Test the neural network model ... on the training data
+    let y_pred = optim.model.forward(&x).map(|x| x.round());
 
-    println!("y_pred: {:?}", y_pred_round);
+    println!("y_pred: {}", y_pred);
+    assert!(y_pred == y);
+
+    //Test the neural network model ... on some new data
+    let x_new = DMatrix::new_random(4, 2);
+    let y_pred_new = optim.model.forward(&x_new).map(|x| x.round());
+    println!("y_pred_new: {}", y_pred_new);
 }
 

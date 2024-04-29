@@ -20,7 +20,7 @@ use crate::nn::model::NeuralNetwork;
 pub struct SGD {
     pub model: NeuralNetwork,
     pub lr: f64, // Learning Rate
-    pub beta: f64, // Momentum
+    pub mu: f64, // Momentum
     pub v_W: Vec<DMatrix<f64>>, // Velocity for weights
     pub v_b: Vec<DMatrix<f64>> // Velocity for biases
 }
@@ -28,7 +28,7 @@ pub struct SGD {
 impl SGD {
     // Constructor for the SGD struct. Creates a new SGD optimizer with
     // the specified learning rate and momentum.
-    pub fn new(model: NeuralNetwork, lr: f64, beta: f64) -> Self {
+    pub fn new(model: NeuralNetwork, lr: f64, mu: f64) -> Self {
         let mut v_W = Vec::new();
         let mut v_b = Vec::new();
         for i in 0..model.layers.len() {
@@ -38,7 +38,7 @@ impl SGD {
         SGD {
             model: model,
             lr: lr,
-            beta: beta,
+            mu: mu,
             v_W: v_W,
             v_b: v_b
         }
@@ -51,37 +51,28 @@ impl SGD {
     // the average gradient over the entire training data.
     pub fn update(&mut self, x: &DMatrix<f64>, y: &DMatrix<f64>) {
 
-        // Forward pass
+        // Forward pass (compute loss)
         let Z = self.model.forward(&x);
-        let loss = self.model.loss.forward(&Z, &y);
+        let _ = self.model.loss.forward(&Z, &y);
 
-
-        // Backward pass
-        //let dLdZ = self.model.loss.backward();
+        // Backward pass (compute gradients)
         let dLdA = self.model.backward();
-        // println!("weights {}\n\n", self.model.layers[0].dLdW.clone());
 
         for i in 0..self.model.layers.len() {
-            // let Z = self.model.forward(&x);
-            // let loss = self.model.loss.forward(&Z, &y);    
-            
-            // let dLdZ = self.model.loss.backward();
-            // let _ = self.model.backward();
-            if self.beta == 0.0 {
+
+            if self.mu == 0.0 {
                 // Update the weights and biases using the negative gradient
                 // of the loss with respect to the parameters
                 let dLdW = self.model.layers[i].dLdW.clone();
                 let dLdb = self.model.layers[i].dLdb.clone();
                 self.model.layers[i].W -= self.lr * &dLdW;
                 self.model.layers[i].b -= self.lr * &dLdb;
-                // println!("weights {}\n\n", dLdW.clone());
-                // self.model.layers[i].print_layer_params();
             } else {
                 // Update the weights and biases using momentum
                 let dLdW = self.model.layers[i].dLdW.clone();
                 let dLdb = self.model.layers[i].dLdb.clone();
-                self.v_W[i] = self.beta * &self.v_W[i] + (1.0 - self.beta) * dLdW;
-                self.v_b[i] = self.beta * &self.v_b[i] + (1.0 - self.beta) * dLdb;
+                self.v_W[i] = self.mu * &self.v_W[i] + &dLdW;
+                self.v_b[i] = self.mu * &self.v_b[i] + &dLdb;
                 self.model.layers[i].W -= self.lr * &self.v_W[i];
                 self.model.layers[i].b -= self.lr * &self.v_b[i];
             }
