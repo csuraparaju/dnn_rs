@@ -42,12 +42,12 @@ To use this library, you will need to have Rust installed on your machine. You c
 Once you have Rust installed, you can add this library as a dependency in your `Cargo.toml` file:
 ```toml
 [dependencies]
-dnn_rs = { git = "" }
+dnn_rs = { git = "https://github.com/csuraparaju/dnn_rs.git" }
 ```
 
 Then you can use the library in your Rust code by importing the necessary modules:
 ```rust
-use dnn_rs::nn::{Activation, Layer, Loss, Model};
+use dnn_rs::nn::{ActivationFunction, Layer, LossFunction, NeuralNetwork};
 use dnn_rs::optim::SGD;
 ```
 
