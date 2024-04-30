@@ -23,8 +23,8 @@ pub trait LossFunction {
 
 // Mean Squared Error Loss
 pub struct MSE {
-    A: DMatrix<f64>, // Model prediction
-    Y: DMatrix<f64>, // Desired output
+    A: DMatrix<f64>, // Model prediction, size N x C
+    Y: DMatrix<f64>, // Desired output, size N x C
     N: usize, // Batch size
     C: usize, // Number of features in each sample
     l_N: DMatrix<f64>, // Column vector of ones of size N (N x 1)
@@ -78,8 +78,8 @@ impl LossFunction for MSE {
 }
 
 pub struct CrossEntropy {
-    A: DMatrix<f64>, // Model prediction
-    Y: DMatrix<f64>, // Desired output
+    A: DMatrix<f64>, // Model prediction, size N x C
+    Y: DMatrix<f64>, // Desired output, size N x C
     N: usize, // Batch size
     C: usize, // Number of features in each sample
     l_N: DMatrix<f64>, // Column vector of ones of size N (N x 1)
@@ -101,12 +101,17 @@ impl CrossEntropy {
     // Use softmax function to transform the raw model outputs A into a
     // probability distribution consisting of C classes proportional to
     // the exponentials of the input numbers.
-    // softmax(A) = exp(A) / Σ_i exp(A_i)
     pub fn softmax(&self, A: &DMatrix<f64>) -> DMatrix<f64> {
-        let mut A_exp = A.map(|x| x.exp());
-        let A_sum = A_exp.clone().sum();
-        A_exp /= A_sum;
-        return A_exp;
+        let mut A_softmax = DMatrix::zeros(A.nrows(), A.ncols());
+        for i in 0..A.nrows() {
+            let row = A.row(i);
+            let max_val = row.max();
+            let exp_sum: f64 = row.iter().map(|x| (x - max_val).exp()).sum();
+            for j in 0..A.ncols() {
+                A_softmax[(i, j)] = (A[(i, j)] - max_val).exp() / exp_sum;
+            }
+        }
+        return A_softmax;
     }
 }
 
@@ -128,8 +133,12 @@ impl LossFunction for CrossEntropy {
         let A_softmax = self.softmax(&self.A);
 
         // Calculate the negative log likelihood
-        let loss = -(&self.Y.component_mul(&A_softmax.map(|x| x.ln()))).sum() / self.N as f64;
-        return loss;
+        let loss = -(self.Y.component_mul(&A_softmax.map(|x| x.ln()))) * &self.l_C;
+
+        let mean_loss = (self.l_N.transpose() * loss.clone()) / (self.N as f64);
+        assert!(mean_loss.nrows() == 1 && mean_loss.ncols() == 1);
+
+        return mean_loss[(0, 0)];
     }
 
     // dLdA = (softmax(A) - Y) / N
@@ -186,4 +195,42 @@ mod tests {
 
         assert_abs_diff_eq!(dLdA, expected_dLdA, epsilon = 1e-8);
     }
+
+    #[test]
+    fn test_cross_entropy_forward() {
+        let mut cross_entropy = CrossEntropy::new();
+        let A = DMatrix::from_row_slice(4, 2, &[-4., -3.,
+                                                -2., -1.,
+                                                 0., 1.,
+                                                 2., 3.]);
+        let Y = DMatrix::from_row_slice(4, 2, &[0., 1.,
+                                                1., 0.,
+                                                1., 0.,
+                                                0., 1.]);
+        let loss = cross_entropy.forward(&A, &Y);
+        let expected_loss = 0.8133;
+        assert_abs_diff_eq!(loss, expected_loss, epsilon = 1e-4);
+    }
+
+    #[test]
+    fn test_cross_entropy_backward() {
+        let mut cross_entropy = CrossEntropy::new();
+        let A = DMatrix::from_row_slice(4, 2, &[-4., -3.,
+                                                -2., -1.,
+                                                 0., 1.,
+                                                 2., 3.]);
+        let Y = DMatrix::from_row_slice(4, 2, &[0., 1.,
+                                                1., 0.,
+                                                1., 0.,
+                                                0., 1.]);
+        let _ = cross_entropy.forward(&A, &Y);
+        let dLdA = cross_entropy.backward();
+        println!("dLdA: {}", dLdA.map(|x| (x * 1000.0).round() / 1000.0));
+        let expected_dLdA = DMatrix::from_row_slice(4, 2, &[0.067, -0.067,
+                                                            -0.183, 0.183,
+                                                            -0.183, 0.183,
+                                                            0.067, -0.067]);
+        assert_abs_diff_eq!(dLdA, expected_dLdA, epsilon = 1e-3);
+    }
+
 }
