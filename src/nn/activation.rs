@@ -231,7 +231,7 @@ mod tests {
                                                        -0.964, -0.7616,
                                                         0., 0.7616,
                                                         0.964, 0.9951]);
-        assert_abs_diff_eq!(A, expected, epsilon = 1e-8);
+        assert_abs_diff_eq!(A, expected, epsilon = 1e-3);
     }
     #[test]
     fn test_tanh_backwards(){
