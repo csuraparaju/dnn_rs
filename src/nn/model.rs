@@ -1,7 +1,7 @@
 use nalgebra::{DMatrix};
 use crate::nn::layers::Linear;
 use crate::nn::loss::MSE;
-use crate::nn::activation::ReLU;
+use crate::nn::activation::ActivationFunction;
 
 /**
     * We can think of a neural network (NN) as a mathematical function
@@ -25,14 +25,14 @@ use crate::nn::activation::ReLU;
 
 pub struct NeuralNetwork {
     pub layers: Vec<Box<Linear>>,
-    pub activations: Vec<Box<ReLU>>, // Invariant: activations.len() == layers.len()
+    pub activations: Vec<Box<dyn ActivationFunction>>,
     pub loss: Box<MSE>,
 }
 
 impl NeuralNetwork {
     // Constructor for the NeuralNetwork struct. Creates a new NeuralNetwork
     // model with the specified layers and loss function.
-    pub fn new(layers: Vec<Box<Linear>>, activations: Vec<Box<ReLU>>, loss: Box<MSE>) -> Self {
+    pub fn new(layers: Vec<Box<Linear>>, activations: Vec<Box<dyn ActivationFunction>>, loss: Box<MSE>) -> Self {
         NeuralNetwork {
             layers: layers,
             activations: activations,
