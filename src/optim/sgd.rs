@@ -55,10 +55,8 @@ impl SGD {
         let Z = self.model.forward(&x);
         let loss = self.model.loss.forward(&Z, &y);
 
-        println!("Loss: {}", loss);
-
         // Backward pass (compute gradients)
-        let dLdA = self.model.backward();
+        let _dLdA = self.model.backward();
 
         for i in 0..self.model.layers.len() {
 

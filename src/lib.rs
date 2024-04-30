@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 pub mod nn {
     pub mod model;
     pub mod layers;
