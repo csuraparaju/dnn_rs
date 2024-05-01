@@ -23,6 +23,13 @@ use crate::nn::activation::ActivationFunction;
     * where each layer is a linear layer followed by an activation function.
 **/
 
+pub trait NN {
+    fn forward(&mut self, x : &DMatrix<f64>) -> DMatrix<f64>;
+    fn backward(&mut self) -> DMatrix<f64>;
+    fn get_layers(&self) -> Vec<Box<dyn Layer>>;
+    fn get_activations(&self) -> Vec<Box<dyn ActivationFunction>>;
+    fn get_loss(&self) -> Box<dyn LossFunction>;
+}
 pub struct NeuralNetwork {
     pub layers: Vec<Box<dyn Layer>>,
     pub activations: Vec<Box<dyn ActivationFunction>>,
