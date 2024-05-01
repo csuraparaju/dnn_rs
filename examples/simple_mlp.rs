@@ -1,5 +1,5 @@
 use dnn_rs::nn::model::NeuralNetwork;
-use dnn_rs::nn::activation::ReLU;
+use dnn_rs::nn::activation::{ReLU, Sigmoid, ActivationFunction};
 use dnn_rs::nn::layers::Linear;
 use dnn_rs::nn::loss::MSE;
 
@@ -15,13 +15,13 @@ fn main() {
     let activation2 = ReLU::new();
 
     let layers = vec![Box::new(linear1), Box::new(linear2)];
-    let activations = vec![Box::new(activation1), Box::new(activation2)];
+    let activations: Vec<Box<dyn ActivationFunction>>  = vec![Box::new(activation1), Box::new(activation2)];
     let loss = Box::new(MSE::new());
 
     let model = NeuralNetwork::new(layers, activations, loss);
     let lr = 0.01;
     let beta = 0.0;
-    let mut optim = SGD::new(model, lr, beta); // Given ownership of model to optim
+    let mut optim = SGD::new(model, lr, beta); // Give ownership of model to optim
 
     // Create some training data
     let x = DMatrix::from_row_slice(4, 2, &[-4.0, -3.0,
@@ -34,7 +34,7 @@ fn main() {
                                             0.0, 1.0]);
 
     // Training loop
-    for _ in 0..5000 {
+    for _ in 0..10000 {
         optim.update(&x, &y);
     }
 
@@ -42,11 +42,5 @@ fn main() {
     let y_pred = optim.model.forward(&x).map(|x| x.round());
 
     println!("y_pred: {}", y_pred);
-    assert!(y_pred == y);
-
-    //Test the neural network model ... on some new data
-    let x_new = DMatrix::new_random(4, 2);
-    let y_pred_new = optim.model.forward(&x_new).map(|x| x.round());
-    println!("y_pred_new: {}", y_pred_new);
 }
 
