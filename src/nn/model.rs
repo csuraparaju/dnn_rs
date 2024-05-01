@@ -1,5 +1,5 @@
-use nalgebra::{DMatrix};
-use crate::nn::layers::Linear;
+use nalgebra::DMatrix;
+use crate::nn::layers::Layer;
 use crate::nn::loss::LossFunction;
 use crate::nn::activation::ActivationFunction;
 
@@ -24,7 +24,7 @@ use crate::nn::activation::ActivationFunction;
 **/
 
 pub struct NeuralNetwork {
-    pub layers: Vec<Box<Linear>>,
+    pub layers: Vec<Box<dyn Layer>>,
     pub activations: Vec<Box<dyn ActivationFunction>>,
     pub loss: Box<dyn LossFunction>,
 }
@@ -32,7 +32,7 @@ pub struct NeuralNetwork {
 impl NeuralNetwork {
     // Constructor for the NeuralNetwork struct. Creates a new NeuralNetwork
     // model with the specified layers and loss function.
-    pub fn new(layers: Vec<Box<Linear>>,
+    pub fn new(layers: Vec<Box<dyn Layer>>,
                activations: Vec<Box<dyn ActivationFunction>>,
                loss: Box<dyn LossFunction>) -> Self {
         NeuralNetwork {

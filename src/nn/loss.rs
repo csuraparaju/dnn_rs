@@ -9,7 +9,7 @@
     * 1. Mean Squared Error (MSE) - L = 1/N * Σ_i (A_i - Y_i)^2
     *
 **/
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 
 // Generic trait for loss functions. Defines the forward and backward methods.
 pub trait LossFunction {

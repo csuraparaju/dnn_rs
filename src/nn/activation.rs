@@ -24,7 +24,7 @@
     *
 **/
 
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 use std::f64::consts;
 
 
