@@ -1,11 +1,11 @@
 use dnn_rs::nn::model::NeuralNetwork;
 use dnn_rs::nn::activation::{ReLU, Sigmoid, ActivationFunction};
-use dnn_rs::nn::layers::Linear;
+use dnn_rs::nn::layers::{Linear, Layer};
 use dnn_rs::nn::loss::{CrossEntropy, MSE};
 
 use dnn_rs::optim::sgd::SGD;
 
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 
 fn main() {
     // Create a simple neural network model
@@ -16,7 +16,7 @@ fn main() {
 
 
 
-    let layers = vec![Box::new(linear1), Box::new(linear2)];
+    let layers: Vec<Box<dyn Layer>>  = vec![Box::new(linear1), Box::new(linear2)];
     let activations: Vec<Box<dyn ActivationFunction>>  = vec![Box::new(activation1), Box::new(activation2)];
     let loss = Box::new(CrossEntropy::new());
 
