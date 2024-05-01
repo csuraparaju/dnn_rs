@@ -28,7 +28,7 @@ use nalgebra::{DMatrix};
 use std::f64::consts;
 
 
-/// Trait for activation functions.
+/// Generic trait for activation functions. Defines the forward and backward methods.
 pub trait ActivationFunction {
     /// Applies the activation function to the input matrix `Z`.
     fn forward(&mut self, Z: &DMatrix<f64>) -> DMatrix<f64>;

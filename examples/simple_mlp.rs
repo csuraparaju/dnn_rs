@@ -1,7 +1,7 @@
 use dnn_rs::nn::model::NeuralNetwork;
 use dnn_rs::nn::activation::{ReLU, Sigmoid, ActivationFunction};
 use dnn_rs::nn::layers::Linear;
-use dnn_rs::nn::loss::MSE;
+use dnn_rs::nn::loss::{CrossEntropy, MSE};
 
 use dnn_rs::optim::sgd::SGD;
 
@@ -9,14 +9,16 @@ use nalgebra::{DMatrix};
 
 fn main() {
     // Create a simple neural network model
-    let linear1 = Linear::new(2, 3);
-    let activation1 = ReLU::new();
-    let linear2 = Linear::new(3, 2);
-    let activation2 = ReLU::new();
+    let linear1 = Linear::new(2, 4);
+    let activation1 = Sigmoid::new();
+    let linear2 = Linear::new(4, 2);
+    let activation2 = Sigmoid::new();
+
+
 
     let layers = vec![Box::new(linear1), Box::new(linear2)];
     let activations: Vec<Box<dyn ActivationFunction>>  = vec![Box::new(activation1), Box::new(activation2)];
-    let loss = Box::new(MSE::new());
+    let loss = Box::new(CrossEntropy::new());
 
     let model = NeuralNetwork::new(layers, activations, loss);
     let lr = 0.01;
