@@ -1,5 +1,5 @@
 use nalgebra::DMatrix;
-use crate::nn::layers::{Layer, Linear};
+use crate::nn::layers::Layer;
 use crate::nn::loss::LossFunction;
 use crate::nn::activation::ActivationFunction;
 

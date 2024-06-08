@@ -135,6 +135,15 @@ impl Layer for Linear{
 
 }
 
+
+pub struct BatchNorm {
+    pub alpha : f64,
+    pub eps : f64,
+    pub BW : DMatrix<f64>,
+    pub Bb : DMatrix<f64>,
+    pub dlDBW : DMatrix<f64>,
+    pub dLdBb : DMatrix<f64>
+}
 // Unit tests
 #[cfg(test)]
 mod tests {
