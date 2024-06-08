@@ -1,4 +1,5 @@
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
+use dyn_clone::DynClone;
 
 /**
     * Multi-Layer Perceptron (MLP) Layers Module
@@ -15,7 +16,24 @@ use nalgebra::{DMatrix};
     *
 **/
 
+pub trait Layer: DynClone {
+    fn forward(&mut self, A : &DMatrix<f64>) -> DMatrix<f64>;
+    fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64>;
+    fn get_weights(&self) -> DMatrix<f64>;
+    fn get_bias(&self) -> DMatrix<f64>;
+    fn get_input(&self) -> DMatrix<f64>;
+    fn get_weight_gradient(&self) -> DMatrix<f64>;
+    fn get_bias_gradient(&self) -> DMatrix<f64>;
+    fn get_batch_size(&self) -> usize;
+    fn get_brod_vec(&self) -> DMatrix<f64>;
 
+    fn set_weights(&mut self, W : DMatrix<f64>) -> ();
+    fn set_bias(&mut self, b : DMatrix<f64>) -> ();
+}
+
+dyn_clone::clone_trait_object!(Layer);
+
+#[derive(Clone)]
 pub struct Linear {
     pub W : DMatrix<f64>, // Weights (C_out x C_in)
     pub b : DMatrix<f64>, // Bias (C_out x 1)
@@ -40,13 +58,25 @@ impl Linear {
             l_N : DMatrix::zeros(0, 0)
         }
     }
+    // Helpful debug method to print the weights and biases of the layer.
+    pub fn print_layer_params(&self) {
+        println!("Linear Layer Parameters:");
+        println!("Input Features (C_in): {}", self.W.ncols());
+        println!("Output Features (C_out): {}", self.W.nrows());
+        println!("Weights (W):");
+        println!("{:?}", self.W);
+        println!("Biases (b):");
+        println!("{:?}", self.b);
+    }
+}
 
+impl Layer for Linear{
     // During forward propagation, we apply a linear transformation
     // to the incoming data A to obtain output data Z using a weight matrix
     // W and a bias vector b. That is, Z = A * W^T + ι_N * b. The variable
     // ι_N is a column vector of ones of size N (the batch size), and is used
     // to broadcast the bias vector b across all samples in the batch.
-    pub fn forward(&mut self, A : &DMatrix<f64>) -> DMatrix<f64> {
+    fn forward(&mut self, A : &DMatrix<f64>) -> DMatrix<f64> {
         self.N = A.nrows();
         self.A = A.clone();
         self.l_N = DMatrix::from_element(self.N, 1, 1.0);
@@ -60,23 +90,49 @@ impl Linear {
     // ∂L/∂A = ∂L/∂Z * W
     // ∂L/∂W = (∂L/∂Z)^T * A
     // ∂L/∂b = (∂L/∂Z)^T * ι_N
-    pub fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64> {
+    fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64> {
         let dLdA = dLdZ * &self.W;
         self.dLdW = dLdZ.transpose() * &self.A;
         self.dLdb = dLdZ.transpose() * &self.l_N;
         return dLdA;
     }
 
-    // Helpful debug method to print the weights and biases of the layer.
-    pub fn print_layer_params(&self) {
-        println!("Linear Layer Parameters:");
-        println!("Input Features (C_in): {}", self.W.ncols());
-        println!("Output Features (C_out): {}", self.W.nrows());
-        println!("Weights (W):");
-        println!("{:?}", self.W);
-        println!("Biases (b):");
-        println!("{:?}", self.b);
+    fn get_weights(&self) -> DMatrix<f64> {
+        self.W.clone() // Return a clone of W
     }
+
+    fn get_bias(&self) -> DMatrix<f64> {
+        self.b.clone()
+    }
+
+    fn get_input(&self) -> DMatrix<f64> {
+        self.A.clone()
+    }
+
+    fn get_weight_gradient(&self) -> DMatrix<f64> {
+        self.dLdW.clone()
+    }
+
+    fn get_bias_gradient(&self) -> DMatrix<f64> {
+        self.dLdb.clone()
+    }
+
+    fn get_batch_size(&self) -> usize {
+        self.N
+    }
+
+    fn get_brod_vec(&self) -> DMatrix<f64> {
+        self.l_N.clone()
+    }
+
+    fn set_weights(&mut self, W : DMatrix<f64>) -> () {
+        self.W = W;
+    }
+
+    fn set_bias(&mut self, b : DMatrix<f64>) -> () {
+        self.b = b;
+    }
+
 }
 
 // Unit tests

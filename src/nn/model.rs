@@ -1,5 +1,5 @@
-use nalgebra::{DMatrix};
-use crate::nn::layers::Linear;
+use nalgebra::DMatrix;
+use crate::nn::layers::{Layer, Linear};
 use crate::nn::loss::LossFunction;
 use crate::nn::activation::ActivationFunction;
 
@@ -23,31 +23,41 @@ use crate::nn::activation::ActivationFunction;
     * where each layer is a linear layer followed by an activation function.
 **/
 
-pub struct NeuralNetwork {
-    pub layers: Vec<Box<Linear>>,
+pub trait NeuralNetwork {
+    fn forward(&mut self, x : &DMatrix<f64>) -> DMatrix<f64>;
+    fn backward(&mut self) -> ();
+    fn get_layers(&self) -> Vec<Box<dyn Layer>>;
+    fn get_activations(&self) -> Vec<Box<dyn ActivationFunction>>;
+    fn get_loss(&self) -> Box<dyn LossFunction>;
+}
+pub struct SequentialNeuralNetwork {
+    pub layers: Vec<Box<dyn Layer>>,
     pub activations: Vec<Box<dyn ActivationFunction>>,
     pub loss: Box<dyn LossFunction>,
 }
 
-impl NeuralNetwork {
+impl SequentialNeuralNetwork {
     // Constructor for the NeuralNetwork struct. Creates a new NeuralNetwork
     // model with the specified layers and loss function.
-    pub fn new(layers: Vec<Box<Linear>>,
+    pub fn new(layers: Vec<Box<dyn Layer>>,
                activations: Vec<Box<dyn ActivationFunction>>,
                loss: Box<dyn LossFunction>) -> Self {
-        NeuralNetwork {
+    SequentialNeuralNetwork {
             layers: layers,
             activations: activations,
             loss: loss,
         }
     }
+}
+
+impl NeuralNetwork for SequentialNeuralNetwork {
 
 
     // During forward propagation, we apply a sequence of linear transformations
     // and activation functions to the input data x to obtain the output data y.
     // That is, y = fNN (x) = fL (fL-1 ( ... f2 (f1 (x)) ... )). The forward
     // method computes the output of the neural network given the input data x.
-    pub fn forward(&mut self, x: &DMatrix<f64>) -> DMatrix<f64> {
+    fn forward(&mut self, x: &DMatrix<f64>) -> DMatrix<f64> {
         let mut A = x.clone();
         for i in 0..self.layers.len() {
             A = self.layers[i].forward(&A);
@@ -68,7 +78,7 @@ impl NeuralNetwork {
     // each layer in the neural network. The backward method computes the
     // gradients of the loss with respect to the parameters of the neural
     // network using the chain rule of calculus.
-    pub fn backward(&mut self) {
+    fn backward(&mut self) -> () {
         let mut dLdA = self.loss.backward();
         let mut dLdZ = DMatrix::zeros(0,0);
         for i in (0..self.layers.len()).rev() {
@@ -77,5 +87,17 @@ impl NeuralNetwork {
             }
             dLdA = self.layers[i].backward(&dLdZ);
         }
+    }
+
+    fn get_layers(&self) -> Vec<Box<dyn Layer>>{
+        self.layers.clone()
+    }
+
+    fn get_activations(&self) -> Vec<Box<dyn ActivationFunction>>{
+        self.activations.clone()
+    }
+
+    fn get_loss(&self) -> Box<dyn LossFunction>{
+        self.loss.clone()
     }
 }

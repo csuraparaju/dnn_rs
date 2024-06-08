@@ -9,10 +9,12 @@
     * 1. Mean Squared Error (MSE) - L = 1/N * Σ_i (A_i - Y_i)^2
     *
 **/
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
+use dyn_clone::DynClone;
+
 
 // Generic trait for loss functions. Defines the forward and backward methods.
-pub trait LossFunction {
+pub trait LossFunction: DynClone {
     // Computes the loss given the model prediction A and the desired output Y.
     fn forward(&mut self, A: &DMatrix<f64>, Y: &DMatrix<f64>) -> f64;
 
@@ -20,8 +22,12 @@ pub trait LossFunction {
     fn backward(&mut self) -> DMatrix<f64>;
 }
 
+dyn_clone::clone_trait_object!(LossFunction);
 
 // Mean Squared Error Loss
+
+
+#[derive(Clone)]
 pub struct MSE {
     A: DMatrix<f64>, // Model prediction, size N x C
     Y: DMatrix<f64>, // Desired output, size N x C
@@ -77,6 +83,8 @@ impl LossFunction for MSE {
     }
 }
 
+
+#[derive(Clone)]
 pub struct CrossEntropy {
     A: DMatrix<f64>, // Model prediction, size N x C
     Y: DMatrix<f64>, // Desired output, size N x C

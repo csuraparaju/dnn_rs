@@ -24,12 +24,13 @@
     *
 **/
 
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 use std::f64::consts;
+use dyn_clone::DynClone;
 
 
 /// Generic trait for activation functions. Defines the forward and backward methods.
-pub trait ActivationFunction {
+pub trait ActivationFunction: DynClone {
     /// Applies the activation function to the input matrix `Z`.
     fn forward(&mut self, Z: &DMatrix<f64>) -> DMatrix<f64>;
 
@@ -37,10 +38,14 @@ pub trait ActivationFunction {
     fn backward(&self, dLdA: &DMatrix<f64>) -> DMatrix<f64>;
 }
 
+dyn_clone::clone_trait_object!(ActivationFunction);
+
 // Identity Activation Function
+#[derive(Clone)]
 pub struct Identity {
     A: DMatrix<f64>,
 }
+
 
 impl Identity {
     pub fn new() -> Self {
@@ -62,6 +67,7 @@ impl ActivationFunction for Identity {
 }
 
 // ReLU Activation Function
+#[derive(Clone)]
 pub struct ReLU {
     A: DMatrix<f64>,
 }
@@ -87,6 +93,7 @@ impl ActivationFunction for ReLU {
 }
 
 // Sigmoid Activation Function
+#[derive(Clone)]
 pub struct Sigmoid {
     A: DMatrix<f64>,
 }
@@ -98,6 +105,7 @@ impl Sigmoid {
         }
     }
 }
+
 
 impl ActivationFunction for Sigmoid {
     fn forward(&mut self, Z: &DMatrix<f64>) -> DMatrix<f64> {
@@ -112,6 +120,7 @@ impl ActivationFunction for Sigmoid {
 }
 
 // Tanh Activation Function
+#[derive(Clone)]
 pub struct Tanh {
     A: DMatrix<f64>,
 }

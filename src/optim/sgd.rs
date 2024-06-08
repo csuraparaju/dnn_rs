@@ -1,5 +1,5 @@
-use nalgebra::{DMatrix};
-use crate::nn::model::NeuralNetwork;
+use nalgebra::DMatrix;
+use crate::nn::model::{NeuralNetwork, SequentialNeuralNetwork};
 
 
 /**
@@ -18,7 +18,7 @@ use crate::nn::model::NeuralNetwork;
 
 
 pub struct SGD {
-    pub model: NeuralNetwork,
+    pub model: SequentialNeuralNetwork,
     pub lr: f64, // Learning Rate
     pub mu: f64, // Momentum
     pub v_W: Vec<DMatrix<f64>>, // Velocity for weights
@@ -28,12 +28,12 @@ pub struct SGD {
 impl SGD {
     // Constructor for the SGD struct. Creates a new SGD optimizer with
     // the specified learning rate and momentum.
-    pub fn new(model: NeuralNetwork, lr: f64, mu: f64) -> Self {
-        let mut v_W = Vec::new();
+    pub fn new(model: SequentialNeuralNetwork, lr: f64, mu: f64) -> Self {
+        let mut v_W: Vec<nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>>> = Vec::new();
         let mut v_b = Vec::new();
         for i in 0..model.layers.len() {
-            v_W.push(DMatrix::zeros(model.layers[i].W.nrows(), model.layers[i].W.ncols()));
-            v_b.push(DMatrix::zeros(model.layers[i].b.nrows(), model.layers[i].b.ncols()));
+            v_W.push(DMatrix::zeros(model.layers[i].get_weights().nrows(), model.layers[i].get_weights().ncols()));
+            v_b.push(DMatrix::zeros(model.layers[i].get_bias().nrows(), model.layers[i].get_bias().ncols()));
         }
         SGD {
             model: model,
@@ -63,18 +63,29 @@ impl SGD {
             if self.mu == 0.0 {
                 // Update the weights and biases using the negative gradient
                 // of the loss with respect to the parameters
-                let dLdW = self.model.layers[i].dLdW.clone();
-                let dLdb = self.model.layers[i].dLdb.clone();
-                self.model.layers[i].W -= self.lr * &dLdW;
-                self.model.layers[i].b -= self.lr * &dLdb;
+                let dLdW = self.model.layers[i].get_weight_gradient().clone();
+                let dLdb = self.model.layers[i].get_bias_gradient().clone();
+                let curr_weights = self.model.layers[i].get_weights();
+                let new_weights = curr_weights - self.lr * &dLdW;
+                self.model.layers[i].set_weights(new_weights);
+                
+                let curr_bias = self.model.layers[i].get_bias();
+                let new_bias = curr_bias - self.lr * &dLdb;
+                self.model.layers[i].set_bias(new_bias);
+
             } else {
                 // Update the weights and biases using momentum
-                let dLdW = self.model.layers[i].dLdW.clone();
-                let dLdb = self.model.layers[i].dLdb.clone();
+                let dLdW = self.model.layers[i].get_weight_gradient().clone();
+                let dLdb = self.model.layers[i].get_bias_gradient().clone();
                 self.v_W[i] = self.mu * &self.v_W[i] + &dLdW;
                 self.v_b[i] = self.mu * &self.v_b[i] + &dLdb;
-                self.model.layers[i].W -= self.lr * &self.v_W[i];
-                self.model.layers[i].b -= self.lr * &self.v_b[i];
+                let curr_weights = self.model.layers[i].get_weights();
+                let new_weights = curr_weights - self.lr * &self.v_W[i];
+                self.model.layers[i].set_weights(new_weights);
+                
+                let curr_bias = self.model.layers[i].get_bias();
+                let new_bias = curr_bias - self.lr * &self.v_b[i];
+                self.model.layers[i].set_bias(new_bias);
             }
         }
     }
