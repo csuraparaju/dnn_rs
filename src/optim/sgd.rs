@@ -1,5 +1,5 @@
 use nalgebra::DMatrix;
-use crate::nn::model::NeuralNetwork;
+use crate::nn::model::{NeuralNetwork, SequentialNeuralNetwork};
 
 
 /**
@@ -18,7 +18,7 @@ use crate::nn::model::NeuralNetwork;
 
 
 pub struct SGD {
-    pub model: NeuralNetwork,
+    pub model: SequentialNeuralNetwork,
     pub lr: f64, // Learning Rate
     pub mu: f64, // Momentum
     pub v_W: Vec<DMatrix<f64>>, // Velocity for weights
@@ -28,8 +28,8 @@ pub struct SGD {
 impl SGD {
     // Constructor for the SGD struct. Creates a new SGD optimizer with
     // the specified learning rate and momentum.
-    pub fn new(model: NeuralNetwork, lr: f64, mu: f64) -> Self {
-        let mut v_W = Vec::new();
+    pub fn new(model: SequentialNeuralNetwork, lr: f64, mu: f64) -> Self {
+        let mut v_W: Vec<nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>>> = Vec::new();
         let mut v_b = Vec::new();
         for i in 0..model.layers.len() {
             v_W.push(DMatrix::zeros(model.layers[i].get_weights().nrows(), model.layers[i].get_weights().ncols()));
