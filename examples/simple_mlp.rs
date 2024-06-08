@@ -1,6 +1,6 @@
-use dnn_rs::nn::model::NeuralNetwork;
+use dnn_rs::nn::model::{SequentialNeuralNetwork, NeuralNetwork};
 use dnn_rs::nn::activation::{ReLU, Sigmoid, ActivationFunction};
-use dnn_rs::nn::layers::Linear;
+use dnn_rs::nn::layers::{Linear, Layer};
 use dnn_rs::nn::loss::{CrossEntropy, MSE};
 
 use dnn_rs::optim::sgd::SGD;
@@ -16,11 +16,11 @@ fn main() {
 
 
 
-    let layers = vec![Box::new(linear1), Box::new(linear2)];
+    let layers: Vec<Box<dyn Layer>> = vec![Box::new(linear1), Box::new(linear2)];
     let activations: Vec<Box<dyn ActivationFunction>>  = vec![Box::new(activation1), Box::new(activation2)];
     let loss = Box::new(CrossEntropy::new());
 
-    let model = NeuralNetwork::new(layers, activations, loss);
+    let model = SequentialNeuralNetwork::new(layers, activations, loss);
     let lr = 0.01;
     let beta = 0.0;
     let mut optim = SGD::new(model, lr, beta); // Give ownership of model to optim
