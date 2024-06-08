@@ -1,4 +1,5 @@
 use nalgebra::DMatrix;
+use dyn_clone::DynClone;
 
 /**
     * Multi-Layer Perceptron (MLP) Layers Module
@@ -15,7 +16,7 @@ use nalgebra::DMatrix;
     *
 **/
 
-pub trait Layer{
+pub trait Layer: DynClone {
     fn forward(&mut self, A : &DMatrix<f64>) -> DMatrix<f64>;
     fn backward(&mut self, dLdZ : &DMatrix<f64>) -> DMatrix<f64>;
     fn get_weights(&self) -> DMatrix<f64>;
@@ -29,6 +30,10 @@ pub trait Layer{
     fn set_weights(&mut self, W : DMatrix<f64>) -> ();
     fn set_bias(&mut self, b : DMatrix<f64>) -> ();
 }
+
+dyn_clone::clone_trait_object!(Layer);
+
+#[derive(Clone)]
 pub struct Linear {
     pub W : DMatrix<f64>, // Weights (C_out x C_in)
     pub b : DMatrix<f64>, // Bias (C_out x 1)
